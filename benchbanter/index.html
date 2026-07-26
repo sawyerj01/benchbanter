@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BenchBanter - Live Sports Hub</title>
+    <title>BenchBanter - Live Sports & Accounts</title>
     <style>
         :root {
             --bg-color: #f8fafc;
@@ -17,8 +17,6 @@
             --border-color: #e2e8f0;
             --gold: #d97706;
             --input-bg: #f1f5f9;
-            --fanduel-blue: #1493ff;
-            --bet365-green: #007a53;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
@@ -26,6 +24,20 @@
 
         header { background-color: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--accent-color); }
+        
+        .user-nav { display: flex; align-items: center; gap: 1rem; }
+        .user-badge { font-weight: 700; font-size: 0.9rem; color: var(--text-main); }
+        .logout-btn { background: none; border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer; font-weight: 600; color: var(--danger-color); }
+
+        /* Auth Modal Overlay */
+        .auth-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .auth-card { background: var(--card-bg); padding: 2rem; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid var(--border-color); }
+        .auth-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; text-align: center; color: var(--accent-color); }
+        .auth-form { display: flex; flex-direction: column; gap: 1rem; }
+        .auth-input { background: var(--input-bg); border: 1px solid var(--border-color); padding: 0.75rem; border-radius: 8px; font-size: 0.95rem; outline: none; }
+        .auth-btn { background: var(--accent-color); color: #fff; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem; }
+        .auth-toggle { text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; }
+        .auth-toggle span { color: var(--accent-color); font-weight: 700; }
 
         .dashboard { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; padding: 1.5rem; max-width: 1400px; margin: 0 auto; width: 100%; flex: 1; }
         @media (max-width: 900px) { .dashboard { grid-template-columns: 1fr; } }
@@ -35,7 +47,6 @@
 
         .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
 
-        /* Card Headers & Badges */
         .card-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
         .sport-badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; background-color: #111827; color: #fff; }
         .game-status-pill { font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 20px; }
@@ -45,7 +56,6 @@
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* Matchup Section (Official League Logos & Headshots) */
         .matchup-container { display: flex; justify-content: space-between; align-items: center; margin: 1rem 0; }
         .team-box { display: flex; flex-direction: column; align-items: center; flex: 1; text-align: center; gap: 0.25rem; }
         .asset-img { width: 60px; height: 60px; object-fit: contain; background: transparent; padding: 2px; }
@@ -68,7 +78,6 @@
         .submit-btn:disabled { background-color: #94a3b8; cursor: not-allowed; }
         .submit-btn.locked { background-color: var(--success-color); }
 
-        /* Sidebar: Permanent Leaderboard & Chat */
         .sidebar { display: flex; flex-direction: column; gap: 1.25rem; position: sticky; top: 1.5rem; }
         .leaderboard-table { width: 100%; border-collapse: collapse; }
         .leaderboard-table th, .leaderboard-table td { text-align: left; padding: 0.6rem 0.4rem; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
@@ -85,8 +94,28 @@
 </head>
 <body>
 
+    <!-- Login / Sign Up Overlay -->
+    <div class="auth-overlay" id="authModal">
+        <div class="auth-card">
+            <div class="auth-title" id="authTitle">Welcome to BenchBanter</div>
+            <form class="auth-form" id="authForm">
+                <input type="email" id="authEmail" class="auth-input" placeholder="Email Address" required>
+                <input type="text" id="authUsername" class="auth-input" placeholder="Username" required>
+                <input type="password" id="authPassword" class="auth-input" placeholder="Password" required>
+                <button type="submit" class="auth-btn" id="authSubmitBtn">Create Account</button>
+            </form>
+            <div class="auth-toggle" id="authToggle">
+                Already have an account? <span>Sign In</span>
+            </div>
+        </div>
+    </div>
+
     <header>
         <div class="logo">🏒 BenchBanter</div>
+        <div class="user-nav">
+            <span class="user-badge" id="currentUserDisplay">Not Logged In</span>
+            <button class="logout-btn" id="logoutBtn" style="display:none;">Log Out</button>
+        </div>
     </header>
 
     <div class="dashboard">
@@ -105,17 +134,13 @@
             <div id="matchesFeed"></div>
         </main>
 
-        <!-- Sidebar: Always Open -->
         <aside class="sidebar">
             <div class="card">
                 <h3>🏆 Leaderboard</h3>
                 <table class="leaderboard-table" style="margin-top:0.75rem;">
                     <thead><tr><th>#</th><th>User</th><th>Points</th><th>Rec</th></tr></thead>
-                    <tbody>
-                        <tr><td class="rank">1</td><td>Alex (You)</td><td><strong>142</strong></td><td>18-4</td></tr>
-                        <tr><td class="rank">2</td><td>Dave_Ott</td><td><strong>135</strong></td><td>16-6</td></tr>
-                        <tr><td class="rank">3</td><td>SarahP</td><td><strong>128</strong></td><td>15-7</td></tr>
-                        <tr><td class="rank">4</td><td>Marc_613</td><td><strong>110</strong></td><td>12-10</td></tr>
+                    <tbody id="leaderboardBody">
+                        <tr><td class="rank">1</td><td id="userLeaderboardName">Player1 (You)</td><td><strong>0</strong></td><td>0-0</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -123,8 +148,7 @@
             <div class="card chat-box">
                 <h3>💬 Live Banter</h3>
                 <div class="chat-messages" id="chatMessages" style="margin-top:0.75rem;">
-                    <div class="message"><span class="author">Dave_Ott:</span> Sens are taking it in OT tonight for sure.</div>
-                    <div class="message"><span class="author">SarahP:</span> Bold strategy Dave!</div>
+                    <div class="message"><span class="author">System:</span> Welcome to BenchBanter!</div>
                 </div>
                 <div class="chat-input-container">
                     <input type="text" id="chatInput" class="chat-input" placeholder="Type banter...">
@@ -136,6 +160,85 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Auth State Management
+            let isSignUp = true;
+            let currentUser = JSON.parse(localStorage.getItem('benchbanter_session')) || null;
+
+            const authModal = document.getElementById('authModal');
+            const authTitle = document.getElementById('authTitle');
+            const authForm = document.getElementById('authForm');
+            const authEmail = document.getElementById('authEmail');
+            const authUsername = document.getElementById('authUsername');
+            const authPassword = document.getElementById('authPassword');
+            const authSubmitBtn = document.getElementById('authSubmitBtn');
+            const authToggle = document.getElementById('authToggle');
+            const currentUserDisplay = document.getElementById('currentUserDisplay');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const userLeaderboardName = document.getElementById('userLeaderboardName');
+
+            function updateAuthUI() {
+                if (currentUser) {
+                    authModal.style.display = 'none';
+                    currentUserDisplay.textContent = `👤 ${currentUser.username}`;
+                    userLeaderboardName.textContent = `${currentUser.username} (You)`;
+                    logoutBtn.style.display = 'inline-block';
+                } else {
+                    authModal.style.display = 'flex';
+                    currentUserDisplay.textContent = 'Not Logged In';
+                    logoutBtn.style.display = 'none';
+                }
+            }
+
+            authToggle.addEventListener('click', () => {
+                isSignUp = !isSignUp;
+                if (isSignUp) {
+                    authTitle.textContent = 'Welcome to BenchBanter';
+                    authUsername.style.display = 'block';
+                    authUsername.required = true;
+                    authSubmitBtn.textContent = 'Create Account';
+                    authToggle.innerHTML = 'Already have an account? <span>Sign In</span>';
+                } else {
+                    authTitle.textContent = 'Sign In to BenchBanter';
+                    authUsername.style.display = 'none';
+                    authUsername.required = false;
+                    authSubmitBtn.textContent = 'Sign In';
+                    authToggle.innerHTML = 'Need an account? <span>Create Account</span>';
+                }
+            });
+
+            authForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = authEmail.value.trim();
+                const password = authPassword.value.trim();
+
+                if (isSignUp) {
+                    const username = authUsername.value.trim();
+                    const newUser = { email, username, password };
+                    localStorage.setItem(`user_${email}`, JSON.stringify(newUser));
+                    localStorage.setItem('benchbanter_session', JSON.stringify(newUser));
+                    currentUser = newUser;
+                } else {
+                    const savedUser = JSON.parse(localStorage.getItem(`user_${email}`));
+                    if (savedUser && savedUser.password === password) {
+                        localStorage.setItem('benchbanter_session', JSON.stringify(savedUser));
+                        currentUser = savedUser;
+                    } else {
+                        alert('Invalid email or password.');
+                        return;
+                    }
+                }
+                updateAuthUI();
+            });
+
+            logoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('benchbanter_session');
+                currentUser = null;
+                updateAuthUI();
+            });
+
+            updateAuthUI();
+
+            // Sports Engine Logic
             const sportSelect = document.getElementById('sportSelect');
             const dateSelect = document.getElementById('dateSelect');
             const matchesFeed = document.getElementById('matchesFeed');
@@ -143,50 +246,19 @@
             const todayEst = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
             dateSelect.value = todayEst;
 
-            // Direct Official League CDN Mapping (NHL.com, MLB.com, NBA.com, NFL.com, UFC.com)
-            const nhlTeamIds = {
-                "Anaheim Ducks": 24, "Arizona Coyotes": 53, "Boston Bruins": 6, "Buffalo Sabres": 7,
-                "Calgary Flames": 20, "Carolina Hurricanes": 12, "Chicago Blackhawks": 16, "Colorado Avalanche": 21,
-                "Columbus Blue Jackets": 29, "Dallas Stars": 25, "Detroit Red Wings": 17, "Edmonton Oilers": 22,
-                "Florida Panthers": 13, "Los Angeles Kings": 26, "Minnesota Wild": 30, "Montreal Canadiens": 8,
-                "Montréal Canadiens": 8, "Nashville Predators": 27, "New Jersey Devils": 1, "New York Islanders": 2,
-                "New York Rangers": 3, "Ottawa Senators": 9, "Philadelphia Flyers": 4, "Pittsburgh Penguins": 5,
-                "San Jose Sharks": 28, "Seattle Kraken": 55, "St. Louis Blues": 19, "Tampa Bay Lightning": 14,
-                "Toronto Maple Leafs": 10, "Utah Hockey Club": 59, "Vancouver Canucks": 23, "Vegas Golden Knights": 54,
-                "Washington Capitals": 15, "Winnipeg Jets": 52
-            };
-
-            const mlbTeamIds = {
-                "Arizona Diamondbacks": 109, "Atlanta Braves": 144, "Baltimore Orioles": 110, "Boston Red Sox": 111,
-                "Chicago Cubs": 112, "Chicago White Sox": 145, "Cincinnati Reds": 113, "Cleveland Guardians": 114,
-                "Colorado Rockies": 115, "Detroit Tigers": 116, "Houston Astros": 117, "Kansas City Royals": 118,
-                "Los Angeles Angels": 108, "Los Angeles Dodgers": 119, "Miami Marlins": 146, "Milwaukee Brewers": 158,
-                "Minnesota Twins": 142, "New York Mets": 121, "New York Yankees": 147, "Oakland Athletics": 133,
-                "Philadelphia Phillies": 143, "Pittsburgh Pirates": 134, "San Diego Padres": 135, "San Francisco Giants": 137,
-                "Seattle Mariners": 136, "St. Louis Cardinals": 138, "Tampa Bay Rays": 139, "Texas Rangers": 140,
-                "Toronto Blue Jays": 141, "Washington Nationals": 120
-            };
+            const mlbTeamIds = { "Arizona Diamondbacks": 109, "Atlanta Braves": 144, "Baltimore Orioles": 110, "Boston Red Sox": 111, "Chicago Cubs": 112, "Chicago White Sox": 145, "Cincinnati Reds": 113, "Cleveland Guardians": 114, "Colorado Rockies": 115, "Detroit Tigers": 116, "Houston Astros": 117, "Kansas City Royals": 118, "Los Angeles Angels": 108, "Los Angeles Dodgers": 119, "Miami Marlins": 146, "Milwaukee Brewers": 158, "Minnesota Twins": 142, "New York Mets": 121, "New York Yankees": 147, "Oakland Athletics": 133, "Philadelphia Phillies": 143, "Pittsburgh Pirates": 134, "San Diego Padres": 135, "San Francisco Giants": 137, "Seattle Mariners": 136, "St. Louis Cardinals": 138, "Tampa Bay Rays": 139, "Texas Rangers": 140, "Toronto Blue Jays": 141, "Washington Nationals": 120 };
 
             function getOfficialLeagueLogo(name, sport) {
                 if (sport === 'icehockey_nhl') {
-                    // Official NHL.com High-Res Vector SVG CDN
                     const teamCode = name.split(' ').pop().toUpperCase();
                     return `https://assets.nhle.com/logos/nhl/svg/${teamCode}_light.svg`;
-                } 
-                else if (sport === 'baseball_mlb') {
+                } else if (sport === 'baseball_mlb') {
                     const id = mlbTeamIds[name];
-                    if (id) {
-                        // Official MLB.com SVG Cap Logo CDN
-                        return `https://www.mlbstatic.com/team-logos/team-cap-on-dark/${id}.svg`;
-                    }
-                } 
-                else if (sport === 'mma_mixed_martial_arts') {
-                    // Official UFC Athlete Headshots CDN
+                    if (id) return `https://www.mlbstatic.com/team-logos/team-cap-on-dark/${id}.svg`;
+                } else if (sport === 'mma_mixed_martial_arts') {
                     const formattedFighter = name.toLowerCase().replace(/[^a-z]/g, '-');
                     return `https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/${formattedFighter}.png&w=120&h=120`;
                 }
-
-                // General High-Res Official CDN Fallback
                 const cleanName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
                 return `https://a.espncdn.com/combiner/i?img=/i/teamlogos/sports/500/${cleanName}.png&h=100&w=100`;
             }
@@ -197,14 +269,9 @@
                 const w = Math.abs(hash % 30) + 10;
                 const l = Math.abs((hash >> 2) % 20) + 5;
                 const ot = Math.abs((hash >> 4) % 8);
-
-                if (sport === 'mma_mixed_martial_arts') {
-                    return `(${Math.abs(hash % 15) + 12}-${Math.abs(hash % 5)}-0)`;
-                } else if (sport === 'icehockey_nhl') {
-                    return `(${w}-${l}-${ot})`;
-                } else {
-                    return `(${w}-${l})`;
-                }
+                if (sport === 'mma_mixed_martial_arts') return `(${Math.abs(hash % 15) + 12}-${Math.abs(hash % 5)}-0)`;
+                if (sport === 'icehockey_nhl') return `(${w}-${l}-${ot})`;
+                return `(${w}-${l})`;
             }
 
             async function fetchLiveOddsAndScores() {
@@ -336,9 +403,10 @@
             function sendMessage() {
                 const text = chatInput.value.trim();
                 if (!text) return;
+                const authorName = currentUser ? currentUser.username : 'Guest';
                 const msg = document.createElement('div');
                 msg.className = 'message';
-                msg.innerHTML = `<span class="author">Alex (You):</span> ${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
+                msg.innerHTML = `<span class="author">${authorName}:</span> ${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
                 chatMessages.appendChild(msg);
                 chatInput.value = '';
                 chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -347,7 +415,6 @@
             sendBtn.addEventListener('click', sendMessage);
             chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-            // Dropdown Handlers
             sportSelect.addEventListener('change', fetchLiveOddsAndScores);
             dateSelect.addEventListener('change', fetchLiveOddsAndScores);
 
