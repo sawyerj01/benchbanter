@@ -1,11 +1,11 @@
 exports.handler = async function(event, context) {
     const API_KEY = process.env.ODDS_API_KEY; 
     
-    // Grab sport key and date from query parameters (default to NHL if not sent)
     const sport = event.queryStringParameters.sport || 'icehockey_nhl';
-    const selectedDate = event.queryStringParameters.date; // Format: YYYY-MM-DD
+    const selectedDate = event.queryStringParameters.date; // YYYY-MM-DD
 
-    let url = `https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=us,ca&markets=h2h&bookmakers=fanduel,bet365`;
+    // Uses the scores endpoint to pull live scores, game progress, and odds together
+    let url = `https://api.the-odds-api.com/v4/sports/${sport}/scores/?apiKey=${API_KEY}&daysFrom=1&dateFormat=iso`;
 
     try {
         const response = await fetch(url);
@@ -15,10 +15,9 @@ exports.handler = async function(event, context) {
         
         let data = await response.json();
 
-        // Filter games by date if selected
+        // Filter games by EST date if provided
         if (selectedDate && Array.isArray(data)) {
             data = data.filter(game => {
-                // Convert game UTC time to EST (America/New_York)
                 const gameEstDate = new Date(game.commence_time).toLocaleDateString("en-CA", {
                     timeZone: "America/New_York"
                 });
