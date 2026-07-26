@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BenchBanter - Sports & Odds Hub</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --accent-color: #2563eb;
+            --accent-hover: #1d4ed8;
+            --success-color: #16a34a;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --gold: #d97706;
+            --input-bg: #f1f5f9;
+            --fanduel-blue: #1493ff;
+            --bet365-green: #007a53;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .server-selector {
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Main Dashboard Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard { grid-template-columns: 1fr; }
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        /* Match Cards */
+        .sport-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        .badge-nhl { background-color: #c8102e; color: #fff; }
+        .badge-ufc { background-color: #111827; color: #fff; }
+
+        .matchup {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .team {
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-align: center;
+            flex: 1;
+        }
+
+        .vs {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0 1rem;
+        }
+
+        .prediction-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .pick-option {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .pick-btn {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.6rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .pick-btn:hover {
+            border-color: var(--accent-color);
+            background-color: #eff6ff;
+            color: var(--accent-color);
+        }
+
+        .pick-btn.selected {
+            border-color: var(--accent-color);
+            background-color: #eff6ff;
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        /* Odds Display */
+        .odds-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: var(--input-bg);
+            border-radius: 6px;
+            padding: 0.3rem 0.5rem;
+            font-size: 0.72rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .odds-item {
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            font-weight: 600;
+        }
+
+        .brand-fanduel { color: var(--fanduel-blue); font-weight: 700; }
+        .brand-bet365 { color: var(--bet365-green); font-weight: 700; }
+        .brand-group { color: var(--accent-color); font-weight: 700; }
+
+        .submit-btn {
+            grid-column: span 2;
+            background-color: var(--accent-color);
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .submit-btn:hover { background-color: var(--accent-hover); }
+
+        .submit-btn.locked {
+            background-color: var(--success-color);
+            cursor: default;
+        }
+
+        /* Sidebar Tables & Chat */
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table th, .leaderboard-table td {
+            text-align: left;
+            padding: 0.6rem 0.4rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        .leaderboard-table th { color: var(--text-muted); font-weight: 600; }
+        .rank { font-weight: 700; color: var(--gold); width: 30px; }
+
+        .chat-box {
+            display: flex;
+            flex-direction: column;
+            height: 280px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            padding-right: 0.5rem;
+        }
+
+        .message {
+            font-size: 0.85rem;
+            background-color: var(--input-bg);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            word-break: break-word;
+        }
+
+        .message .author {
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-right: 0.3rem;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .send-btn {
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .send-btn:hover { background-color: var(--accent-hover); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span>🏒</span> BenchBanter
+        </div>
+        <select class="server-selector" id="serverSelector">
+            <option value="Ottawa">📍 Ottawa Server (14 members)</option>
+            <option value="New York">📍 New York Server (42 members)</option>
+            <option value="Global">🌐 Global Hub</option>
+        </select>
+    </header>
+
+    <div class="dashboard">
+        <!-- Main Feed -->
+        <main id="matchesFeed">
+            <div class="section-title">
+                <h2>Upcoming Matches & Fight Cards</h2>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Week 12 Picks</span>
+            </div>
+
+            <!-- Fallback NHL Card -->
+            <div class="card match-card" data-votes-a="8" data-votes-b="4">
+                <span class="sport-badge badge-nhl">NHL • Today 7:00 PM</span>
+                <div class="matchup">
+                    <div class="team">Ottawa Senators</div>
+                    <div class="vs">VS</div>
+                    <div class="team">Toronto Maple Leafs</div>
+                </div>
+                <div class="prediction-controls">
+                    <div class="pick-option">
+                        <button class="pick-btn" data-choice="a">Sens Win</button>
+                        <div class="odds-container">
+                            <div class="odds-item"><span class="brand-group">Group:</span> <span class="pct-a">--%</span></div>
+                            <div class="odds-item"><span class="brand-fanduel">FD:</span> -130</div>
+                            <div class="odds-item"><span class="brand-bet365">365:</span> -125</div>
+                        </div>
+                    </div>
+                    <div class="pick-option">
+                        <button class="pick-btn" data-choice="b">Leafs Win</button>
+                        <div class="odds-container">
+                            <div class="odds-item"><span class="brand-group">Group:</span> <span class="pct-b">--%</span></div>
+                            <div class="odds-item"><span class="brand-fanduel">FD:</span> +110</div>
+                            <div class="odds-item"><span class="brand-bet365">365:</span> +105</div>
+                        </div>
+                    </div>
+                    <button class="submit-btn">Lock In Prediction</button>
+                </div>
+            </div>
+
+            <!-- Fallback UFC Card -->
+            <div class="card match-card" data-votes-a="3" data-votes-b="9">
+                <span class="sport-badge badge-ufc">UFC 305 • Saturday</span>
+                <div class="matchup">
+                    <div class="team">Main Event<br><span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);">Fighter A</span></div>
+                    <div class="vs">VS</div>
+                    <div class="team">Main Event<br><span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);">Fighter B</span></div>
+                </div>
+                <div class="prediction-controls">
+                    <div class="pick-option">
+                        <button class="pick-btn" data-choice="a">Fighter A (KO)</button>
+                        <div class="odds-container">
+                            <div class="odds-item"><span class="brand-group">Group:</span> <span class="pct-a">--%</span></div>
+                            <div class="odds-item"><span class="brand-fanduel">FD:</span> +180</div>
+                            <div class="odds-item"><span class="brand-bet365">365:</span> +175</div>
+                        </div>
+                    </div>
+                    <div class="pick-option">
+                        <button class="pick-btn" data-choice="b">Fighter B (Decision)</button>
+                        <div class="odds-container">
+                            <div class="odds-item"><span class="brand-group">Group:</span> <span class="pct-b">--%</span></div>
+                            <div class="odds-item"><span class="brand-fanduel">FD:</span> -220</div>
+                            <div class="odds-item"><span class="brand-bet365">365:</span> -210</div>
+                        </div>
+                    </div>
+                    <button class="submit-btn">Lock In Prediction</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Sidebar -->
+        <aside>
+            <div class="card">
+                <div class="section-title">
+                    <h3 id="leaderboardTitle">Ottawa Leaderboard</h3>
+                </div>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>User</th>
+                            <th>Points</th>
+                            <th>Record</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="rank">1</td><td>Alex (You)</td><td><strong>142</strong></td><td>18-4</td></tr>
+                        <tr><td class="rank">2</td><td>Dave_Ott</td><td><strong>135</strong></td><td>16-6</td></tr>
+                        <tr><td class="rank">3</td><td>SarahP</td><td><strong>128</strong></td><td>15-7</td></tr>
+                        <tr><td class="rank">4</td><td>Marc_613</td><td><strong>110</strong></td><td>12-10</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card chat-box">
+                <div class="section-title">
+                    <h3 id="chatTitle">#ottawa-banter</h3>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message"><span class="author">Dave_Ott:</span> Sens are taking it in OT tonight for sure.</div>
+                    <div class="message"><span class="author">SarahP:</span> Bold strategy Dave, bold strategy...</div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="Type banter here...">
+                    <button id="sendBtn" class="send-btn">Send</button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Function to attach click listeners and consensus handlers to match cards
+            function setupCardInteractions(card) {
+                updateGroupConsensus(card);
+
+                const pickBtns = card.querySelectorAll('.pick-btn');
+                const submitBtn = card.querySelector('.submit-btn');
+                let selectedChoice = null;
+
+                pickBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (submitBtn.classList.contains('locked')) return;
+                        pickBtns.forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        selectedChoice = btn.dataset.choice;
+                    });
+                });
+
+                submitBtn.addEventListener('click', () => {
+                    if (!selectedChoice) {
+                        alert('Please select a pick first!');
+                        return;
+                    }
+
+                    if (!submitBtn.classList.contains('locked')) {
+                        submitBtn.classList.add('locked');
+                        submitBtn.textContent = `✓ Locked in Pick`;
+
+                        if (selectedChoice === 'a') {
+                            card.dataset.votesA = parseInt(card.dataset.votesA, 10) + 1;
+                        } else {
+                            card.dataset.votesB = parseInt(card.dataset.votesB, 10) + 1;
+                        }
+
+                        updateGroupConsensus(card);
+
+                        pickBtns.forEach(b => {
+                            if (!b.classList.contains('selected')) b.style.opacity = '0.5';
+                        });
+                    }
+                });
+            }
+
+            function updateGroupConsensus(card) {
+                const votesA = parseInt(card.dataset.votesA || "0", 10);
+                const votesB = parseInt(card.dataset.votesB || "0", 10);
+                const total = votesA + votesB;
+
+                const pctA = total > 0 ? Math.round((votesA / total) * 100) : 50;
+                const pctB = total > 0 ? Math.round((votesB / total) * 100) : 50;
+
+                const elemA = card.querySelector('.pct-a');
+                const elemB = card.querySelector('.pct-b');
+                if (elemA) elemA.textContent = `${pctA}%`;
+                if (elemB) elemB.textContent = `${pctB}%`;
+            }
+
+            // Initialize fallback static cards
+            document.querySelectorAll('.match-card').forEach(setupCardInteractions);
+
+            // Fetch Live Odds from Netlify Function if Available
+            async function loadLiveNetlifyOdds() {
+                try {
+                    const response = await fetch('/.netlify/functions/get-odds');
+                    if (!response.ok) return; // Silent fallback if backend function isn't live yet
+                    
+                    const games = await response.json();
+                    if (!Array.isArray(games) || games.length === 0) return;
+
+                    const matchesFeed = document.getElementById('matchesFeed');
+                    
+                    // Clear existing sample cards if real live data is returned
+                    const header = matchesFeed.querySelector('.section-title');
+                    matchesFeed.innerHTML = '';
+                    matchesFeed.appendChild(header);
+
+                    games.forEach(game => {
+                        const fdBook = game.bookmakers?.find(b => b.key === 'fanduel');
+                        const b365Book = game.bookmakers?.find(b => b.key === 'bet365');
+
+                        const fdHome = fdBook?.markets[0]?.outcomes?.find(o => o.name === game.home_team)?.price || 'N/A';
+                        const fdAway = fdBook?.markets[0]?.outcomes?.find(o => o.name === game.away_team)?.price || 'N/A';
+
+                        const b365Home = b365Book?.markets[0]?.outcomes?.find(o => o.name === game.home_team)?.price || 'N/A';
+                        const b365Away = b365Book?.markets[0]?.outcomes?.find(o => o.name === game.away_team)?.price || 'N/A';
+
+                        const cardHTML = document.createElement('div');
+                        cardHTML.className = 'card match-card';
+                        cardHTML.dataset.votesA = "5";
+                        cardHTML.dataset.votesB = "5";
+
+                        cardHTML.innerHTML = `
+                            <span class="sport-badge badge-nhl">NHL • ${new Date(game.commence_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                            <div class="matchup">
+                                <div class="team">${game.home_team}</div>
+                                <div class="vs">VS</div>
+                                <div class="team">${game.away_team}</div>
+                            </div>
+                            <div class="prediction-controls">
+                                <div class="pick-option">
+                                    <button class="pick-btn" data-choice="a">${game.home_team} Win</button>
+                                    <div class="odds-container">
+                                        <div class="odds-item"><span class="brand-group">Group:</span> <span class="pct-a">50%</span></div>
+                                        <div class="odds-item"><span class="brand-fanduel">FD:</span> ${fdHome > 0 ? '+' + fdHome : fdHome}</div>
+                                        <div class="odds-item"><span class="brand-bet365">365:</span> ${b365Home > 0 ? '+' + b365Home : b365Home}</div>
+                                    </div>
+                                </div>
+                                <div class="pick-option">
+                                    <button class="pick-btn" data-choice="b">${game.away_team} Win</button>
+                                    <div class="odds-container">
+                                        <div class="odds-item"><span class="brand-group">Group:</span> <span class="pct-b">50%</span></div>
+                                        <div class="odds-item"><span class="brand-fanduel">FD:</span> ${fdAway > 0 ? '+' + fdAway : fdAway}</div>
+                                        <div class="odds-item"><span class="brand-bet365">365:</span> ${b365Away > 0 ? '+' + b365Away : b365Away}</div>
+                                    </div>
+                                </div>
+                                <button class="submit-btn">Lock In Prediction</button>
+                            </div>
+                        `;
+
+                        matchesFeed.appendChild(cardHTML);
+                        setupCardInteractions(cardHTML);
+                    });
+                } catch (err) {
+                    console.log("Operating in local prototype mode.");
+                }
+            }
+
+            loadLiveNetlifyOdds();
+
+            // Chat Engine
+            const chatInput = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const chatMessages = document.getElementById('chatMessages');
+
+            function sendMessage() {
+                const text = chatInput.value.trim();
+                if (text === '') return;
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message';
+                msgDiv.innerHTML = `<span class="author">Alex (You):</span> ${escapeHTML(text)}`;
+                chatMessages.appendChild(msgDiv);
+                chatInput.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            sendBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+            function escapeHTML(str) {
+                return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+            }
+        });
+    </script>
+</body>
+</html>
